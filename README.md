@@ -2,7 +2,7 @@
 
 ### โครงสร้างไฟล์
 
-![โครงสร้างไฟล์](https://bucket.kku.ac.th/iskku/github/Screenshot%202026-10-02%20102534.png)
+![โครงสร้างไฟล์](https://bucket.kku.ac.th/iskku/github/Screenshot_2026-10-02_102534.png)
 
 ### สร้าง Validation Schema
 

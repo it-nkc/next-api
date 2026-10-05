@@ -6,7 +6,7 @@
 
 ### HTTP Request
 
-![HTTP Request](https://bucket.kku.ac.th/iskku/github/b580cba8-fc0f-440e-b6ca-256bd938fa28.png)
+![HTTP Request](https://bucket.kku.ac.th/iskku/github/HTTP_Methods_Explained_in_Thai.png)
 
 ### API สำหรับ GET + POST
 

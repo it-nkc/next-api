@@ -8,11 +8,6 @@
 
 ![HTTP Request](https://bucket.kku.ac.th/iskku/github/b580cba8-fc0f-440e-b6ca-256bd938fa28.png)
 
-### สร้าง Validation Schema
-
-เพิ่มไฟล์
-_app/students/validation.ts_
-
 ```tsx
 import { z } from "zod";
 
@@ -50,7 +45,6 @@ _app/api/students/route.ts_
 ```tsx
 import prisma from "@/app/lib/prisma";
 import { NextResponse } from "next/server";
-import { studentSchema } from "@/app/students/validation";
 
 export async function GET() {
   const students = await prisma.student.findMany({
@@ -60,49 +54,6 @@ export async function GET() {
   });
 
   return NextResponse.json(students);
-}
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-
-    const result = studentSchema.safeParse({
-      studentCode: body.studentCode,
-      name: body.name,
-      email: body.email ?? "",
-      major: body.major,
-      year: Number(body.year),
-    });
-
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          message: "ข้อมูลไม่ถูกต้อง",
-          errors: result.error.flatten().fieldErrors,
-        },
-        {
-          status: 400,
-        },
-      );
-    }
-
-    const student = await prisma.student.create({
-      data: result.data,
-    });
-
-    return NextResponse.json(student, {
-      status: 201,
-    });
-  } catch {
-    return NextResponse.json(
-      {
-        message: "ไม่สามารถสร้างข้อมูลนักศึกษาได้",
-      },
-      {
-        status: 500,
-      },
-    );
-  }
 }
 ```
 
@@ -217,6 +168,96 @@ http://localhost:3000/api/students/1
 ```
 POST /api/students
 Content-Type: application/json
+```
+
+### สร้าง Validation Schema
+
+เพิ่มไฟล์
+
+_app/students/validation.ts_
+
+```tsx
+import { z } from "zod";
+
+export const studentSchema = z.object({
+  studentCode: z
+    .string()
+    .min(1, "กรุณากรอกรหัสนักศึกษา")
+    .max(20, "รหัสนักศึกษาต้องไม่เกิน 20 ตัวอักษร"),
+
+  name: z
+    .string()
+    .min(1, "กรุณากรอกชื่อ-นามสกุล")
+    .max(100, "ชื่อ-นามสกุลต้องไม่เกิน 100 ตัวอักษร"),
+
+  email: z.string().email("รูปแบบ Email ไม่ถูกต้อง").or(z.literal("")),
+
+  major: z
+    .string()
+    .min(1, "กรุณากรอกสาขา")
+    .max(100, "ชื่อสาขาต้องไม่เกิน 100 ตัวอักษร"),
+
+  year: z
+    .number()
+    .int("ชั้นปีต้องเป็นจำนวนเต็ม")
+    .min(1, "ชั้นปีต้องไม่น้อยกว่า 1")
+    .max(8, "ชั้นปีต้องไม่มากกว่า 8"),
+});
+```
+
+แก้ไขไฟล์
+_app/students/create/route.ts_
+เพิ่ม
+
+```
+import { studentSchema } from "@/app/students/validation";
+```
+
+เพิ่ม function
+
+```tsx
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+
+    const result = studentSchema.safeParse({
+      studentCode: body.studentCode,
+      name: body.name,
+      email: body.email ?? "",
+      major: body.major,
+      year: Number(body.year),
+    });
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          message: "ข้อมูลไม่ถูกต้อง",
+          errors: result.error.flatten().fieldErrors,
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const student = await prisma.student.create({
+      data: result.data,
+    });
+
+    return NextResponse.json(student, {
+      status: 201,
+    });
+  } catch {
+    return NextResponse.json(
+      {
+        message: "ไม่สามารถสร้างข้อมูลนักศึกษาได้",
+      },
+      {
+        status: 500,
+      },
+    );
+  }
+}
 ```
 
 Body:
@@ -652,4 +693,36 @@ export default async function StudentsPage({
     </main>
   );
 }
+```
+
+แก้ไขไฟล์
+
+_app/students/create/page.tsx_
+
+```tsx
+<select
+  id="major"
+  name="major"
+  className="w-full rounded-md border border-gray-300 px-3 py-2"
+>
+  <option value="Information Technology">Information Technology</option>
+  <option value="Computer Science">Computer Science</option>
+  <option value="Digital Technology">Digital Technology</option>
+</select>
+```
+
+แก้ไขไฟล์
+_app/students/edit/[id]/page.tsx_
+
+```tsx
+<select
+  id="major"
+  name="major"
+  defaultValue={student.major}
+  className="w-full rounded-md border border-gray-300 px-3 py-2"
+>
+  <option value="Information Technology">Information Technology</option>
+  <option value="Computer Science">Computer Science</option>
+  <option value="Digital Technology">Digital Technology</option>
+</select>
 ```

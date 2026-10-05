@@ -178,7 +178,7 @@ export const studentSchema = z.object({
 ```
 
 แก้ไขไฟล์
-_app/students/create/route.ts_
+_api/students/route.ts_
 เพิ่ม
 
 ```
